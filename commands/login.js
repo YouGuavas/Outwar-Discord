@@ -1,10 +1,14 @@
 const axios = require('axios');
 const queryString = require('query-string');
 
-exports.login = (user, pass, url, message) => {
+exports.login = (user, pass, url, stuff, cb = () => {}) => {
 	axios({
 		method: 'post',
-		url: `${url}index.php`, 
+		url: `${url}index.php`,
+		maxRedirects: 0,
+		validateStatus: (status) => {
+				return status >= 200 && status < 303; 
+			},
 		data: queryString.stringify({
 			login_username:user,
 			login_password: pass,
@@ -18,21 +22,29 @@ exports.login = (user, pass, url, message) => {
 	})
 		.then((response) => {
 			const check = response.request.res.responseUrl;
-			check === 'http://sigil.outwar.com/login?LE=1' ? message.reply(`Successfully logged into rga: ${user}`) : message.reply(`Could not log into rga: ${user}, check login info`)
-			return;
-			})
+			let rg_sess;
+			response.headers['set-cookie'].map(item => {
+				item.indexOf('rg_sess') !== -1 ? rg_sess = item.split('rg_sess_id=')[1].split(';')[0] : ''
+			});
+			if (stuff.message) {
+				check !== 'http://sigil.outwar.com/login?LE=1' ? stuff.message.reply(`Successfully logged into rga: ${user}, new session id: ${rg_sess}`) : stuff.message.reply(`Could not log into rga: ${user}, check login info`)
+			}
+			stuff.session ? stuff.session.session = rg_sess : ''
+			cb();
+		})
 		.catch((err) => {
 			console.log(err)
-			return message.reply('Error. Check logs.');
+			return stuff.message ? stuff.message.reply('Error. Check logs.') : '';
 			})
 }
-exports.logout = (url, message) => {
-	axios.get(`${url}`)
+exports.logout = (url, stuff) => {
+	axios.get(`${url}?cmd=logout`)
 		.then((res) => {
-			return message.reply('Successfully logged out.')
+			return stuff.message.reply('Successfully logged out.')
 		})
 		.catch((err) => {
 			console.log(err);
-			return message.reply('Error. Check logs.');
+			return stuff.message.reply('Error. Check logs.');
 		})
-}	
+}
+
