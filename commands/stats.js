@@ -1,5 +1,5 @@
 const axios = require('axios');
-exports.stats = (name, message, url) => {
+exports.stats = (name, url, stuff) => {
 		axios.get(`${url}profile.php?transnick=${name}`)
 			.then((res) => {
 				const data = res.data;
@@ -7,10 +7,10 @@ exports.stats = (name, message, url) => {
 						name = data.split('id="divHeaderName"')[1].split('(')[0].split('">')[1],
 						power = data.split('TOTAL POWER')[1].split('size="2">')[1].split('</')[0],
 						eleDmg = data.split('ELEMENTAL ATTACK')[1].split('size="2">')[1].split('<')[0];
-				return message.reply(`\n**Name:** ${name}\n**Total Power:** ${power}\n**Elemental Damage:** ${eleDmg}\n`, {files: [image]})
+				return stuff.message.reply(`\n**Name:** ${name}\n**Total Power:** ${power}\n**Elemental Damage:** ${eleDmg}\n`, {files: [image]})
 			})
 			.catch((err) => {
 				console.log(err);
-				return message.reply("There's been an error. Please check your logs for more info.")
+				return stuff.message.reply("There's been an error. Please check your logs for more info.")
 			})
 	}
