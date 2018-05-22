@@ -11,7 +11,7 @@ const Boss = require('./commands/bosses');
 const Skills = require('./commands/skills');
 
 const client = new Discord.Client();
-const prefix = "!";
+const prefix = process.env.PREFIX;
 
 // Initialize Discord Bot
 const app = express();
@@ -20,7 +20,36 @@ app.use(cors());
 let rg_sess = {
 	session: ''
 }
-
+const help = {
+	ping: {
+		message: 'Returns a pong. Helps to check if bot is listening.',
+		usage: `${prefix}pong`
+	},
+	images: {
+		message: 'Returns a google image search matching <query>.',
+		usage: `${prefix}images <query>`
+	},
+	purge: {
+		message: 'Cleans channel of past [number] messages. <number> defaults to 100.',
+		usage: 	`${prefix}purge [number]`
+	},
+	stats: {
+		message: 'Returns a basic profile of <characterName>.',
+		usage: `${prefix}stats <characterName>`
+	},
+	bosses: {
+		message: 'Returns a list of bosses currently alive, and their percentages.',
+		usage: `${prefix}bosses`
+	},
+	login: {
+		message: 'Updates session id of checker/former.',
+		usage: `${prefix}login`
+	},
+	train: {
+		message: 'Trains dc skills{circ, haste, stone skin}, on <characterID>, <level> number of times.',
+		usage: `${prefix}train <loginUsername> <loginPassword> <characterID> <level>`
+	}
+}
 client.on("ready", () => {//
 	Login.login(process.env.OW_USERNAME, process.env.OW_PASSWORD, process.env.BASE, {session:rg_sess});
 	console.log("I am ready!");
@@ -77,10 +106,31 @@ client.on("message", (message) => {
 	if (command === 'bosses') {
 		return Boss.bossStats(process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID, checker: process.env.CHECKER});
 	}
+	if (command === 'boss-stats') {
+		return Boss.statsBoss(process.env.BASE, args[0], {session: rg_sess, message: message, serverid: process.env.SERVERID, checker: process.env.CHECKER});
+	}
 	//
 	if (command === 'train') {
 		message.delete().catch(o_O => {});
 		return Skills.dcTrain(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message, serverid: process.env.SERVERID});
+	}
+
+	if (command === 'help') {
+		let msg = '';
+		args.length === 0 ? (
+			msg = '**Commands:**',
+			Object.keys(help).map((item, index) => {
+				index === Object.keys(help).length - 1 ? msg += ` ${item}` : msg += ` ${item},`
+			}),
+			message.reply(msg)
+			) : (
+			msg = `\n**${args[0].toLowerCase()}:**`,
+			Object.keys(help[args[0].toLowerCase()]).map(item => {
+				msg += `\n**${item}**:\n${help[args[0].toLowerCase()][item]}`
+			}),
+			message.reply(msg)
+			)
+			return;
 	}
 });
 
