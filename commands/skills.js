@@ -20,21 +20,18 @@ exports.dcTrain = (url, user, pass, id, level, stuff) => {
 		session: ''
 	}
 	stuff.login(user, pass, url, {message: stuff.message, session: session}, () => {
-		Object.keys(skills).map(item => {
-			skilltrain(url, id, level, skills[item], {message: stuff.message, session: session})
+		Object.keys(skills).map(async item => {
+			await skilltrain(url, id, level-1, skills[item], {message: stuff.message, serverid: stuff.serverid, session: session})
 		});
 	})
 	
 	return;
 }
 skilltrain = (url, id, level, skill, stuff) => {
-	axios.get(`${url}cast_skills.php?C=4&trained=${skill.id}&rg_sess_id=${stuff.session.session}&serverid=${stuff.serverid}&suid=${id}`)
+	axios.get(`${url}cast_skills.php?C=4&T=${skill.id}&rg_sess_id=${stuff.session.session}&serverid=${stuff.serverid}&suid=${id}`)
 		.then(res => {
-			stuff.message.reply(level);
-			level === 0 ? (
-				skilltrain(url, id, level-1, skill, stuff),
-				stuff.message.reply(`Training ${skill.name} ${level-1} more times.`)
-				) : ''
+			//console.log(res);
+			level !== 0 ? skilltrain(url, id, level-1, skill, stuff) : stuff.message.reply(`Finished training ${skill.name}`)
 		})
 		.catch(err => {
 			console.log(err);

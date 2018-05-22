@@ -79,7 +79,8 @@ client.on("message", (message) => {
 	}
 	//
 	if (command === 'train') {
-		return Skills.dcTrain(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message});
+		message.delete().catch(o_O => {});
+		return Skills.dcTrain(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message, serverid: process.env.SERVERID});
 	}
 });
 
