@@ -1,0 +1,25 @@
+{
+  "name": "discord-greeter",
+  "version": "1.0.0",
+  "description": "Bot for discord",
+  "main": "bot.js",
+  "author": "Guava",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
+    "cors": "^2.8.4",
+    "discord.io": "^2.5.3",
+    "discord.js": "^11.3.0",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.2",
+    "nodemon": "^1.17.4",
+    "query-string": "^6.1.0",
+    "request": "^2.83.0",
+    "winston": "^2.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon bot.js"
+  },
+  "license": "ISC"
+}
