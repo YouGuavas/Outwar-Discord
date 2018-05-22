@@ -4,8 +4,12 @@ const request = require('request');
 const cors = require('cors');
 const cheerio = require('cheerio');
 const dotenv = require('dotenv').config();
+
 const Stats = require('./commands/stats');
 const Login = require('./commands/login');
+const Boss = require('./commands/bosses');
+const Skills = require('./commands/skills');
+
 const client = new Discord.Client();
 const prefix = "!";
 
@@ -13,9 +17,12 @@ const prefix = "!";
 const app = express();
 app.use(cors());
 
+let rg_sess = {
+	session: ''
+}
 
-
-client.on("ready", () => {
+client.on("ready", () => {//
+	Login.login(process.env.OW_USERNAME, process.env.OW_PASSWORD, process.env.BASE, {session:rg_sess});
 	console.log("I am ready!");
 })
 client.on("message", (message) => {
@@ -51,18 +58,28 @@ client.on("message", (message) => {
 					return message.reply("Successfully purged the channel.");
     	});
 	}
+	//
 	if (command === 'stats') {
 		if (args.length === 0) {
 			return message.reply('Please provide a character to check stats for');
 		}
 		const searchString = args[0];
-		return Stats.stats(searchString, message, process.env.BASE);
+		return Stats.stats(searchString, process.env.BASE, {message: message});
 	}
+	//
 	if (command === 'login') {
-		return Login.login(process.env.OW_USERNAME, process.env.OW_PASSWORD, process.env.BASE, message);
+		return Login.login(process.env.OW_USERNAME, process.env.OW_PASSWORD, process.env.BASE, {session: rg_sess, message: message});
 	}
 	if (command === 'logout') {
-		return Login.logout(process.env.BASE, message);
+		return Login.logout(process.env.BASE, {message: message});
+	}
+	//
+	if (command === 'bosses') {
+		return Boss.bossStats(process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID, checker: process.env.CHECKER});
+	}
+	//
+	if (command === 'train') {
+		return Skills.dcTrain(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message});
 	}
 });
 
