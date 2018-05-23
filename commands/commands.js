@@ -3,8 +3,11 @@ const Login = require('./login');
 const Boss = require('./bosses');
 const Skills = require('./skills');
 const World = require('./world');
+const Gear = require('./gear');
 
+const mongo = require('mongodb').MongoClient;
 const dotenv = require('dotenv').config();
+const mongoURI = `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}`;
 const prefix = process.env.PREFIX;
 let rg_sess = {
 	session: ''
@@ -111,6 +114,44 @@ exports.commands = {
 		},
 		message: 'Attacks all mobs in current room <number> of times.',
 		usage: `${prefix}attack <loginUsername> <loginPassword> <characterID> <number>`
+	},
+
+	'check-gear': {
+		fxn: (message, args) => {
+			return Gear.myGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (gears) => {
+				mongo.connect(mongoURI, (err, client) => {
+					if (err) throw err;
+					const db = client.db(process.env.DB_NAME);
+					const collection = db.collection(process.env.COLLECTION);
+					collection.findOne({suid: args[0]}, (err, res) => {
+						if (err) throw err;
+						gears.toString() === res.gear.toString() ? message.reply(`${args[0]} is wearing his default gear.`) : message.reply(`Oh no! ${args[0]} is not wearing his default gear!`);
+						client.close();
+						return;
+					})
+				})
+			})
+		},
+		message: 'Returns a list of all gear being worn by <characterID>',
+		usage: `${prefix}check-gear <characterID>`
+	},
+	'cache-gear': {
+		fxn: (message, args) => {
+			return Gear.myGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (gear) => {
+				mongo.connect(mongoURI, (err, client) => {
+					if (err) throw err;
+					const db = client.db(process.env.DB_NAME);
+					const collection = db.collection(process.env.COLLECTION);
+					collection.update({suid: args[0]}, {suid: args[0], gear: gear}, {upsert: true}, (err, data) => {
+						if (err) throw err;
+						client.close();
+						return message.reply(`Successfully cached gear on ${args[0]}`);
+					})
+				})
+			});
+		},
+		message: 'Caches a list of all gear being worn by <characterID>',
+		usage: `${prefix}cache-gear <characterID>`
 	},
 
 	'help': {
