@@ -138,19 +138,21 @@ exports.commands = {
 	'cache-gear': {
 		fxn: (message, args) => {
 			return Gear.myGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (gear) => {
-				mongo.connect(mongoURI, (err, client) => {
-					if (err) throw err;
-					const db = client.db(process.env.DB_NAME);
-					const collection = db.collection(process.env.COLLECTION);
-					collection.update({suid: args[0]}, {suid: args[0], gear: gear}, {upsert: true}, (err, data) => {
+				Gear.skillGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (skillGear) => {
+					/*	mongo.connect(mongoURI, (err, client) => {
 						if (err) throw err;
-						client.close();
-						return message.reply(`Successfully cached gear on ${args[0]}`);
-					})
+						const db = client.db(process.env.DB_NAME);
+						const collection = db.collection(process.env.COLLECTION);
+						collection.update({suid: args[0]}, {suid: args[0], gear: gear, skillGear: skillGear}, {upsert: true}, (err, data) => {
+							if (err) throw err;
+							client.close();
+							return message.reply(`Successfully cached gear on ${args[0]}`);
+						})
+					})*/
 				})
 			});
 		},
-		message: 'Caches a list of all gear being worn by <characterID>',
+		message: 'Caches a list of all gear being worn by <characterID>, and all skill gear.',
 		usage: `${prefix}cache-gear <characterID>`
 	},
 
