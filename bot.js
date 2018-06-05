@@ -23,10 +23,12 @@ client.on("message", (message) => {
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const command = message.content.slice(1, message.length).trim().split(/ +/g)[0];
-	const args = message.content.slice(1, message.length).trim().split(/ +/g).slice(1);
+	let args = message.content.slice(1, message.length).trim().split(/ +/g).slice(1);
 	
 	Object.keys(Commands.commands).indexOf(command) !== -1 ? (Object.keys(Commands.commands).map(item => {
-		item.toLowerCase() === command.toLowerCase() ? Commands.commands[item].fxn(message, args) : '';
+		item.toLowerCase() === command.toLowerCase() ? (
+			item.toLowerCase() !== 'add-quest' ? Commands.commands[item].fxn(message, args) : (args = message.content.slice(1, message.length).trim().split(' ').slice(1).join(' ') , Commands.commands[item].fxn(message, args))
+			) : '';
 	})) : message.reply(`I'm sorry, I don't recognize that command.`);
 });
 

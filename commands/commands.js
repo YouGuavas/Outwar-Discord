@@ -4,6 +4,11 @@ const Boss = require('./bosses');
 const Skills = require('./skills');
 const World = require('./world');
 const Gear = require('./gear');
+const Pvp = require('./pvp');
+const Misc = require('./misc');
+const Quests = require('./quests');
+const Treasury = require('./treasury');
+const Backpack = require('./backpack');
 
 const mongo = require('mongodb').MongoClient;
 const dotenv = require('dotenv').config();
@@ -110,11 +115,46 @@ exports.commands = {
 	'attack': {
 		fxn: (message, args) => {
 			message.delete().catch(o_O => {});
-			return World.attackRoom(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message, serverid: process.env.SERVERID});
+			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+					return World.attackRoom(process.env.BASE, id, args[3], {session: sess, message: message, serverid: process.env.SERVERID}, World.attackRoom);
+				});
+			});
 		},
 		message: 'Attacks all mobs in current room <number> of times.',
-		usage: `${prefix}attack <loginUsername> <loginPassword> <characterID> <number>`
+		usage: `${prefix}attack <loginUsername> <loginPassword> <charName> <number>`
 	},
+	'move': {
+		fxn: (message, args) => {
+			/*mongo.connect(mongoURI, (err, client) => {
+				if (err) throw err;
+				const db = client.db('outwar');
+				const collection = db.collection('paths');
+				//collection.findOne
+			})*/
+			message.reply('Sorry, that command is currently not functioning.');
+			//World.mover()
+		},
+		message: 'Out of order',
+		usage: `Don't.`
+	},
+	'quest': {
+		fxn: (message, args) => {
+			mongo.connect(mongoURI, (err, client) => {
+				if (err) throw err;
+				const db = client.db('outwar');
+				const collection = db.collection('quests');
+				collection.findOne({name: args[0]}, (err, res) => {
+					if (err) throw err;
+					return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
+						return World.quest(process.env.BASE, args[0], args[1], id, res, {message: message, login: Login.login, serverid: process.env.SERVERID}, World.attackRoom)
+						})
+					})
+				})
+			},
+			message: 'Performs quest <questName> on character <charName>.',
+			usage: `${prefix}quest <loginUsername> <loginPassword> <charName> <questName>`
+		},
 
 	'check-gear': {
 		fxn: (message, args) => {
@@ -155,7 +195,73 @@ exports.commands = {
 		message: 'Caches a list of all gear being worn by <characterID>, and all skill gear.',
 		usage: `${prefix}cache-gear <characterID>`
 	},
-
+	'hitlist': {
+		fxn: (message, args) => {
+			message.delete().catch(o_O => {});
+			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
+				return Pvp.runHitlist(process.env.BASE ,args[0], args[1], args[2], id, {login: Login.login, message: message, serverid: process.env.SERVERID} )
+				})
+		},
+		message: 'Attacks hitlist with <charName> <number> of times.',
+		usage: '!hitlist <loginUsername> <loginPassword> <charName> <number>'
+	},
+	'id': {
+		fxn: (message, args) => {
+			return Misc.nameToId(process.env.BASE, args[0], {message: message, serverid: process.env.SERVERID});
+		},
+		message: 'Returns the suid of <charName>',
+		usage: '!id <charName>'
+	},
+	'move': {
+		fxn: (message, args) => {
+			return Misc.nameToId(process.env.BASE, args[0], {serverid: process.env.SERVERID}, (id) => {
+				return World.move(process.env.BASE, id, args.slice(1), 0, {message: message, serverid: process.env.SERVERID, session: rg_sess}, World.move);
+			})
+		},
+		message: 'Moves <charName> one space to <direction>.',
+		usage: `${prefix}move <charName> <direction>(north south east west)`
+	},
+	'add-quest': {
+		fxn: (message, args) => {
+			return Quests.questAdd(args, {message: message});
+		},
+		message: 'Adds a quest to the database',
+		usage: `${prefix}add-quest <shortcut> <fullName> <steps>`
+	},
+	'summon': {
+		fxn: (message, args) => {
+			let connection;
+			//console.log(message.member.voiceChannel);
+			message.member.voiceChannel ? connection = message.member.voiceChannel.join() : message.reply('You need to join a voice channel first!');
+		},
+		message: 'Summons bot to your voice channel.',
+		usage: `${prefix}summon`
+	},
+	'buy': {
+		fxn: (message, args) => {
+			message.delete().catch(o_O=>{console.log(o_O)});
+			return Misc.nameToId(process.env.BASE, args[3], {serverid: process.env.SERVERID}, (id) => {
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+					return Treasury.purchase(process.env.BASE, args[2], id, args[4], args.slice(5), {session: sess, serverid: process.env.SERVERID, message: message});
+				})
+			})
+		},
+		message: 'Buys <number> of <item> on <charName>.',
+		usage: `${prefix}buy <loginUsername> <loginPassword> <securityWord> <charName> <number> <item>`
+	},
+	'activate': {
+		fxn: (message, args) => {
+			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+					return Backpack.getItem(process.env.BASE, id, args.slice(4).join(' '), {session: sess, message: message, serverid: process.env.SERVERID}, (items) => {
+						return Backpack.activate(process.env.BASE, id, items, args[3], {session: sess, message: message, serverid: process.env.SERVERID})
+					})
+				})
+			})
+		},
+		message: 'Activates <number> of <item> on <charName>',
+		usage: `${prefix}activate <loginUsername> <loginPassword> <charName> <number> <item>`
+	},
 	'help': {
 		fxn: (message, args) => {
 			let msg = '';
