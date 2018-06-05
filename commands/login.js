@@ -30,7 +30,7 @@ exports.login = (user, pass, url, stuff, cb = () => {}) => {
 				check !== 'http://sigil.outwar.com/login?LE=1' ? stuff.message.reply(`Successfully logged into rga: ${user}, new session id: ${rg_sess}`) : stuff.message.reply(`Could not log into rga: ${user}, check login info`)
 			}
 			stuff.session ? stuff.session.session = rg_sess : ''
-			cb();
+			cb(rg_sess);
 		})
 		.catch((err) => {
 			console.log(err)
