@@ -199,11 +199,28 @@ exports.commands = {
 		fxn: (message, args) => {
 			message.delete().catch(o_O => {});
 			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
-				return Pvp.runHitlist(process.env.BASE ,args[0], args[1], args[2], id, {login: Login.login, message: message, serverid: process.env.SERVERID} )
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message:message, serverid: process.env.SERVERID}, (sess) => {
+						return Pvp.runHitlist(process.env.BASE ,args[0], args[1], args[2], id, {session: sess, message: message, serverid: process.env.SERVERID} )
+					})
 				})
 		},
-		message: 'Attacks hitlist with <charName> <number> of times.',
-		usage: '!hitlist <loginUsername> <loginPassword> <charName> <number>'
+		message: 'Attacks hitlist with <charName>.',
+		usage: `${prefix}hitlist <loginUsername> <loginPassword> <charName>`
+	},
+	'hit-crews': {
+		fxn: (message, args) => {
+			//[103] 
+			//[12435, 6, 344, 103, 6644, 10295, 6742, 10083, 14223, 11645, 11652, 985, 236, 3890, 5359, 11666]
+			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+					return Pvp.loadCrews(process.env.BASE, id, [12435, 6, 344, 103, 6644, 10295, 6742, 10083, 14223, 11645, 11652, 985, 236, 3890, 5359, 11666], 0, [], {session: sess, message: message, serverid: process.env.SERVERID}, (accounts) => {
+							return Pvp.runCrews(process.env.BASE, id, accounts, {session: sess, message: message, serverid: process.env.SERVERID}) 
+					})
+				})
+			})
+		},
+		message: 'Attacks all hardcoded crews with <charName>.',
+		usage: `${prefix}hit-crews <loginUsername> <loginPassword> <charName>`
 	},
 	'id': {
 		fxn: (message, args) => {

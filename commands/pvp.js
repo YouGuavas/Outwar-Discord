@@ -1,20 +1,57 @@
 const axios = require('axios');
 const queryString = require('query-string');
+//
+
+
+exports.runCrews = (url, id, accounts, stuff) => {
+	let promises = [];
+	let obj = {};
+	accounts.map(item => {
+			promises.push(axios.get(`${url}profile.php?suid=${id}&rg_sess_id=${stuff.session}&serverid=${stuff.serverid}&id=${item}`))
+		});
+		axios.all(promises).then(results => {
+			results.map(async res => {
+				const page = res.data;
+				let myself;
+				let attacks = [];
+				page.indexOf('attackWindow') !== -1 ? (
+					myself = page.split('attackWindow(')[1].split(`)"`)[0].split(','),
+					myself.map((item, index) => {
+						myself[index] = item.split(`'`)[1];
+					}),
+					await attack(url, id, myself[1], myself[3], 'undefined', {message:stuff.message, session: stuff.session, serverid: stuff.serverid})
+					) : console.log('foof');
+				return;
+			})
+
+		}).catch(o_O => {
+			console.log(o_O);
+		})
+}
+exports.loadCrews = (url, id, crewIDs, index, accounts, stuff, cb = () => {}) => {
+	axios.get(`${url}crew_profile.php?id=${crewIDs[index]}&rg_sess_id=${stuff.session}&suid=${id}&serverid=${stuff.serverid}`)
+		.then(res=> {
+			const page = res.data.split('crew_memberss.jpg')[1].split('/table')[0].split('profile.php?id=');
+			page.slice(1).map((item, ind) => {
+				accounts.push(item.split('"')[0]);
+			});
+			index < crewIDs.length - 1 ? exports.loadCrews(url, id, crewIDs, index+1, accounts, {session: stuff.session, serverid: stuff.serverid, message: stuff.message}, cb) : console.log('oy vey'), cb(accounts);
+		})
+		.catch(o_O => {
+			console.log(o_O);
+			return stuff.message.reply('Error. Please check logs.');
+		})
+}
 
 
 exports.runHitlist = (url, user, pass, name, id, stuff) => {
-	let session = {
-		session: ''
-	}
 	let hitlist = {};
-	stuff.login(user, pass, url, {message: stuff.message, session: session}, () => {
-		loadHitlist(url, id, {session: session, serverid: stuff.serverid}, (hL) => {
-			hitlist = hL;
-			Object.keys(hitlist).map(async item => {
-				await attack(url, id, item, hitlist[item], {message: stuff.message, session: session, serverid: stuff.serverid})
-			})
-			return stuff.message.reply('Done with your hitlist run.');
+	loadHitlist(url, id, {session: session, serverid: stuff.serverid}, (hL) => {
+		hitlist = hL;
+		Object.keys(hitlist).map(async item => {
+			await attack(url, id, item, hitlist[item],'crew_hitlist', {message: stuff.message, session: stuff.session, serverid: stuff.serverid})
 		})
+		return stuff.message.reply('Done with your hitlist run.');
 	})
 }
 
@@ -37,27 +74,24 @@ loadHitlist = (url, id, stuff, cb = () => {}) => {
 		})
 }
 
-attack = (url, id, attackId, h, stuff, cb = () => {}) => {
+attack = (url, id, attackId, h,r, stuff) => {
 	axios({
 		method: 'post',
-		url: `${url}somethingelse.php?serverid=${stuff.serverid}&rg_sess_id=${stuff.session.session}&suid=${id}&attackid=${attackId}&r=crew_hitlist`,
+		url: `${url}somethingelse.php?serverid=${stuff.serverid}&rg_sess_id=${stuff.session}&suid=${id}&attackid=${attackId}&r=${r}`,
 		maxRedirects: 0,
 		data: queryString.stringify({
 			hash: h,
 			rage: 500,
-			message: 'https://media1.tenor.com/images/0176c730d178b1af0f985365e065cdc0/tenor.gif'
+			message: 'quest'
 		}),
 		headers: {
 			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:13.0) Gecko/20100101 Firefox/13.0.1 ID:20120614114901',
 			Connection: 'keep-alive'
 		}
-	})
-	.then(res => {
+	}).then(res => {
+		//console.log(res);
 		return;
-	})
-	.catch(o_O => {
-		//console.log(o_O);
-		//stuff.message ? stuff.message.reply('Error. Please check logs.') : null;
+	}).catch(o_O => {
 		return;
 	})
 }
