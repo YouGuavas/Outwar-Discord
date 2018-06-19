@@ -24,7 +24,7 @@ exports.login = (user, pass, url, stuff, cb = () => {}) => {
 			const check = response.request.res.responseUrl;
 			let rg_sess;
 			response.headers['set-cookie'].map(item => {
-				item.indexOf('rg_sess') !== -1 ? rg_sess = item.split('rg_sess_id=')[1].split(';')[0] : ''
+				item.indexOf('rg_sess_id=') !== -1 ? rg_sess = item.split('rg_sess_id=')[1].split(';')[0] : ''
 			});
 			if (stuff.message) {
 				check !== 'http://sigil.outwar.com/login?LE=1' ? stuff.message.reply(`Successfully logged into rga: ${user}, new session id: ${rg_sess}`) : stuff.message.reply(`Could not log into rga: ${user}, check login info`)

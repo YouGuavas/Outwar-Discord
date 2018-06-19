@@ -10,6 +10,7 @@ const Quests = require('./quests');
 const Treasury = require('./treasury');
 const Backpack = require('./backpack');
 
+const axios = require('axios');
 const mongo = require('mongodb').MongoClient;
 const dotenv = require('dotenv').config();
 const mongoURI = `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}`;
@@ -200,7 +201,7 @@ exports.commands = {
 			message.delete().catch(o_O => {});
 			return Misc.nameToId(process.env.BASE, args[2], {serverid: process.env.SERVERID}, (id) => {
 				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message:message, serverid: process.env.SERVERID}, (sess) => {
-						return Pvp.runHitlist(process.env.BASE ,args[0], args[1], args[2], id, {session: sess, message: message, serverid: process.env.SERVERID} )
+						return Pvp.runHitlist(process.env.BASE ,args[0], args[1], id, {session: sess, message: message, serverid: process.env.SERVERID} )
 					})
 				})
 		},
@@ -278,6 +279,49 @@ exports.commands = {
 		},
 		message: 'Activates <number> of <item> on <charName>',
 		usage: `${prefix}activate <loginUsername> <loginPassword> <charName> <number> <item>`
+	},
+	'tokens': {
+		fxn: (message, args) => {
+			const successes = [], fails = [];
+			const oneDay = 24 * 60 * 60 * 1000;
+			logins.map(item => {
+					return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
+					 return Misc.getFirstId(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (id) => {
+						 	return Misc.tokenClaim(process.env.BASE, id, {session: sess, message: message, serverid: process.env.SERVERID}, (product) => {
+						 		product ? successes.push(product) : fails.push(product);
+						 		console.log(successes, fails);
+						 	});
+						})
+					}) 
+				});
+				
+			message.reply('Finished getting tokens for you.');
+			setInterval(() => {
+					logins.map(item => {
+					return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
+					 return Misc.getFirstId(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (id) => {
+						 	return Misc.tokenClaim(process.env.BASE, id, {session: sess, message: message, serverid: process.env.SERVERID}, (product) => {
+						 		product ? successes.push(product) : fails.push(product);
+						 		console.log(successes, fails);
+						 	});
+						})
+					}) 
+				});
+				
+				return message.reply('Finished getting tokens for you.');
+				}, oneDay
+			)
+		},
+		message: 'Collects tokens on preset RGAs',
+		usage: `${prefix}tokens`
+	},
+	'hourstomilliseconds': {
+		fxn: (message, args) => {
+			const time = args[0] * 60 * 60 * 1000;
+			return message.reply(time);
+		},
+		message: 'Converts hours to milliseconds.',
+		usage: `${prefix}hoursToMilliseconds <hours>`
 	},
 	'help': {
 		fxn: (message, args) => {

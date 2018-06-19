@@ -44,19 +44,43 @@ exports.loadCrews = (url, id, crewIDs, index, accounts, stuff, cb = () => {}) =>
 }
 
 
-exports.runHitlist = (url, user, pass, name, id, stuff) => {
+exports.runHitlist = (url, user, pass, id, stuff) => {
 	let hitlist = {};
-	loadHitlist(url, id, {session: session, serverid: stuff.serverid}, (hL) => {
+	let promises = [];
+	loadHitlist(url, id, {session: stuff.session, serverid: stuff.serverid}, (hL) => {
 		hitlist = hL;
+		//console.log(hitlist);
 		Object.keys(hitlist).map(async item => {
-			await attack(url, id, item, hitlist[item],'crew_hitlist', {message: stuff.message, session: stuff.session, serverid: stuff.serverid})
+			await promises.push(axios({
+				method: 'post',
+				url: `${url}somethingelse.php?serverid=${stuff.serverid}&rg_sess_id=${stuff.session}&suid=${id}&attackid=${item}&r=crew_hitlist`,
+				maxRedirects: 0,
+				data: queryString.stringify({
+					hash: hitlist[item],
+					rage: 500,
+					message: 'quest. last hit.'
+				}),
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:13.0) Gecko/20100101 Firefox/13.0.1 ID:20120614114901',
+					Connection: 'keep-alive'
+					}
+				})
+			);
+			//await attack(url, id, item, hitlist[item],'crew_hitlist', {message: stuff.message, session: stuff.session, serverid: stuff.serverid})
+		})
+		axios.all(promises).then(results => {
+			results.map(res => {
+				return;
+			})
+		}).catch(() => {
+			return;
 		})
 		return stuff.message.reply('Done with your hitlist run.');
 	})
 }
 
 loadHitlist = (url, id, stuff, cb = () => {}) => {
-	axios.get(`${url}crew_hitlist.php?suid=${id}&rg_sess_id=${stuff.session.session}&serverid=${stuff.serverid}`)
+	axios.get(`${url}crew_hitlist.php?suid=${id}&rg_sess_id=${stuff.session}&serverid=${stuff.serverid}`)
 		.then(res => {
 			const page = res.data.split('attackWindow(');
 			let ids = {};
@@ -64,7 +88,6 @@ loadHitlist = (url, id, stuff, cb = () => {}) => {
 			page.map(item => {
 				item.indexOf('Attack!') !== -1 ? ids[item.split(`','`)[1]] = item.split(`','`)[3].split(`', '`)[0] : null;
 			})
-
 			return cb(ids);
 		})
 		.catch(o_O => {
@@ -75,6 +98,7 @@ loadHitlist = (url, id, stuff, cb = () => {}) => {
 }
 
 attack = (url, id, attackId, h,r, stuff) => {
+	console.log(r);
 	axios({
 		method: 'post',
 		url: `${url}somethingelse.php?serverid=${stuff.serverid}&rg_sess_id=${stuff.session}&suid=${id}&attackid=${attackId}&r=${r}`,
@@ -89,7 +113,7 @@ attack = (url, id, attackId, h,r, stuff) => {
 			Connection: 'keep-alive'
 		}
 	}).then(res => {
-		//console.log(res);
+		console.log(res.data);
 		return;
 	}).catch(o_O => {
 		return;
