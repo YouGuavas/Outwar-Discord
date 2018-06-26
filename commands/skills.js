@@ -1,6 +1,36 @@
 const axios = require('axios');
+const queryString = require('query-string');
 
-exports.dcTrain = (url, user, pass, id, level, stuff) => {
+
+exports.cast = (url, id, skills, index, stuff, cb = () => {}) => {
+	axios({
+		method: 'post',
+		url: `${url}cast_skills.php?C=4&rg_sess_id=${stuff.session}&suid=${id}&serverid=${stuff.serverid}`,
+		maxRedirects: 0,
+		validateStatus: (status) => {
+				return status >= 200 && status < 303; 
+			},
+		data: queryString.stringify({
+			cast:'Cast+Skill',
+			castskillid: skills[index]
+		}),
+		headers: {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:13.0) Gecko/20100101 Firefox/13.0.1 ID:20120614114901',
+			Connection: 'keep-alive'
+		}
+	})
+	.then(res => {
+		index < skills.length - 1 ? exports.cast(url, id, skills, index + 1, stuff, cb) : null;
+		cb();
+		return;
+	})
+	.catch(o_O => {
+		console.log(o_O);
+		return stuff.message.reply(`Error casting ${skill} on ${id}. Please check logs.`);
+	})
+}
+
+exports.dcTrain = (url, id, level, index, stuff) => {
 	const skills = {
 		Circ: {
 			id: 3008,
@@ -18,19 +48,16 @@ exports.dcTrain = (url, user, pass, id, level, stuff) => {
 	let session = {
 		session: ''
 	}
-	stuff.login(user, pass, url, {message: stuff.message, session: session}, () => {
-		Object.keys(skills).map(async item => {
-			await skilltrain(url, id, level-1, skills[item], {message: stuff.message, serverid: stuff.serverid, session: session})
-		});
-	})
-	
+	skilltrain(url, id, level-1, skills[Object.keys(skills)[index]], {message: stuff.message, serverid: stuff.serverid, session: stuff.session})
+	index < Object.keys(skills).length -1 ? exports.dcTrain(url, id, level, index+1, stuff) : null;
+			
 	return;
 }
 skilltrain = (url, id, level, skill, stuff) => {
-	axios.get(`${url}cast_skills.php?C=4&T=${skill.id}&rg_sess_id=${stuff.session.session}&serverid=${stuff.serverid}&suid=${id}`)
+	axios.get(`${url}cast_skills.php?C=4&T=${skill.id}&rg_sess_id=${stuff.session}&serverid=${stuff.serverid}&suid=${id}`)
 		.then(res => {
 			//console.log(res);
-			level !== 0 ? skilltrain(url, id, level-1, skill, stuff) : stuff.message.reply(`Finished training ${skill.name}`)
+			level !== 0 ? skilltrain(url, id, level-1, skill, stuff) : null;//stuff.message.reply(`Finished training ${skill.name}`)
 		})
 		.catch(err => {
 			console.log(err);
@@ -38,7 +65,6 @@ skilltrain = (url, id, level, skill, stuff) => {
 		})
 		return;
 }
-
 
 exports.skills = {
 	dc: {
