@@ -9,6 +9,7 @@ const Misc = require('./misc');
 const Quests = require('./quests');
 const Treasury = require('./treasury');
 const Backpack = require('./backpack');
+const Trial = require('./trial');
 
 const axios = require('axios');
 const mongo = require('mongodb').MongoClient;
@@ -106,10 +107,27 @@ exports.commands = {
 	'train': {
 		fxn: (message, args) => {
 			message.delete().catch(o_O => {});
-			return Skills.dcTrain(process.env.BASE, args[0], args[1], args[2], args[3], {login: Login.login, message: message, serverid: process.env.SERVERID});
+			return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+				return Skills.dcTrain(process.env.BASE, args[2], args[3], 0, {session: sess, message: message, serverid: process.env.SERVERID});
+			})
 		},
 		message: 'Trains dc skills{circ, haste, stone skin}, on <characterID>, <level> number of times.',
 		usage: `${prefix}train <loginUsername> <loginPassword> <characterID> <level>`
+	},
+	'masstrain': {
+		fxn: (message, args) => {
+			message.delete().catch(o_O => {});
+			return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message: message, serverid: process.env.SERVERID}, (sess) => {
+				return Misc.getAllIds(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (ids) => {
+					ids.map(item => {
+						return Skills.dcTrain(process.env.BASE, item, args[2], 0, {session: sess, message: message, serverid: process.env.SERVERID}, Skills.dcTrain)
+					});
+				})
+			})
+
+		},
+		message: 'Trains dc skills{circ, haste, stone skin}, <level> number of times on all chars.',
+		usage: `${prefix}masstrain <loginUsername> <loginPassword> <level>`
 	},
 
 
@@ -323,6 +341,74 @@ exports.commands = {
 		message: 'Converts hours to milliseconds.',
 		usage: `${prefix}hoursToMilliseconds <hours>`
 	},
+	'runa': {
+		fxn: (message, args) => {
+			const MOBS = ['combatant'];
+			const rgas = [{
+				username: 'rganame',
+				password: 'password'
+			},
+			{
+				username: 'rganame',
+				password: 'password'
+			}
+			];
+			rgas.map(item => {
+			return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
+					return Misc.getAllIds(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (ids) => {
+						return Trial.run(process.env.BASE, ids.slice(0, 1), MOBS, args[0], {session: sess, message: message, serverid: process.env.SERVERID})
+					});
+				});
+			})
+		},
+		message: 'Runs all chars on all rgas <number> times',
+		usage: `${prefix}runa <number>`
+	},
+
+	
+	'run1s': {
+		fxn: (message, args) => {
+			const MOBS = ['crusader'];
+			const rgas = [{
+				username: 'username',
+				password: 'password'
+			}, {
+				username: 'rganame',
+				password: 'rgapassword'
+			}];
+			rgas.map(item => {
+				return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
+					return Misc.getFirstId(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (id) => {
+						return Trial.run(process.env.BASE, [id], MOBS, args[0], {session: sess, message: message, serverid: process.env.SERVERID})
+					});
+				});
+			})
+		},
+		message: 'Runs top char on rga <number> times',
+		usage: `${prefix}run1s <number>`
+	},
+	'run1t': {
+		fxn: (message, args) => {
+			const MOBS = ['crusader'];
+			const rgas = [{
+				username: 'rganame',
+				password: 'rgapassword'
+			}];
+			const BASE = 'http://torax.outwar.com/';
+			const SERVERID = 2;
+			rgas.map(item => {
+				return Login.login(item.username, item.password, BASE, {session: rg_sess, serverid: SERVERID}, (sess) => {
+					return Misc.getFirstId(BASE, {session: sess, message: message, serverid: SERVERID}, (id) => {
+						return Trial.run(BASE, [id], MOBS, args[0], {session: sess, message: message, serverid: SERVERID})
+					});
+				});
+			})
+		},
+		message: 'Runs top char on rga <number> times',
+		usage: `${prefix}run1t <number>`
+	},
+
+
 	'help': {
 		fxn: (message, args) => {
 			let msg = '';

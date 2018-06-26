@@ -1,6 +1,50 @@
 const axios = require('axios');
 const mongo = require('mongodb').MongoClient;
 
+exports.teleport = (url, id, room, stuff, cb=()=>{}) => {
+	axios.get(`${url}world.php?suid=${id}&serverid=${stuff.serverid}&rg_sess_id=${stuff.session}&room=${room}`)
+		.then(res => {
+			cb();
+			return;
+		})
+		.catch(o_O => {
+			console.log(o_O);
+			return stuff.message.reply('Error teleporting. Please check logs.');
+		})
+}
+
+exports.attackByMobNames = (url, id, mobNames, stuff, cb = () => {}) => {
+	axios.get(`${url}ajax_changeroomb.php?suid=${id}&serverid=${stuff.serverid}&rg_sess_id=${stuff.session}`)
+		.then(res => {
+			const page = res.data.roomDetails;
+			let mobs = {};
+			page.split('<table ').map((item, index) => {
+				mobNames.map(mob => {
+					item.toLowerCase().indexOf(mob) !== -1 && item.indexOf('somethingelse') !== -1 ? !mobs[item.split('<b>')[1].split('</b>')[0]] ? mobs[item.split('<b>')[1].split('</b>')[0]] = [{somethingelse: `somethingelse.php?${item.split('somethingelse.php?')[1].split('">')[0]}`}] : mobs[item.split('<b>')[1].split('</b>')[0]].push({somethingelse: `somethingelse.php?${item.split('somethingelse.php?')[1].split('">')[0]}`}) : null;
+				});
+			});
+			Object.keys(mobs).map(item => {
+				attackMultiple(url, id, mobs[item], 0, {message: stuff.message, session: stuff.session, serverid: stuff.serverid}, attackMultiple);
+			});
+		})
+		.catch(o_O => {
+			console.log(o_O);
+			return; //stuff.message.reply('Error. Please check logs.');
+		})
+}	
+const attackMultiple = (url, id, mobs, index, stuff, cb = () => {}) => {
+	axios.get(`${url}${mobs[index].somethingelse}&suid=${id}&serverid=${stuff.serverid}&rg_sess_id=${stuff.session}`)
+		.then(res => {
+			index < mobs.length -1 ? cb(url, id, mobs, index + 1, stuff, cb) : null;
+			return;
+		})
+		.catch(o_O => {
+			console.log(o_O);
+			return;
+		})
+	return;
+}
+
 exports.attackRoom = (url, id, numA, stuff, cb=()=>{}) => {
 	let mobs = {};
 	axios.get(`${url}ajax_changeroomb.php?suid=${id}&serverid=${stuff.serverid}&rg_sess_id=${stuff.session}`)
@@ -36,7 +80,6 @@ exports.move = (url, id, path, index, stuff, cb = () => {}) => {
 	//console.log(moveRL)
 	const directions = ['north', 'south', 'east', 'west'];
 	let dir = path[index];
-	console.log(dir);
 	if (directions.indexOf(dir.toLowerCase()) !== -1) {
 		axios.get(moveRL)
 			.then(res => {
@@ -92,7 +135,6 @@ const helpers = {
 		})
 	}
 }
-
 
 const attack = (url, id, stuff) => {
 	

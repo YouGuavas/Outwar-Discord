@@ -14,11 +14,28 @@ exports.nameToId = (url, name, stuff, cb = () => {}) => {
 		})
 }
 exports.getFirstId = (url, stuff, cb = () => {}) => {
-	axios.get(`${url}accounts.php?rg_sess_id=${stuff.session}&serverid=${stuff.serverid}`)
+	axios.get(`${url}accounts.php?rg_sess_id=${stuff.session}&ac_serverid=${stuff.serverid}`)
 		.then(res => {
 			const id = res.data.split('world.php?suid=')[1].split('&serverid')[0];
 			cb(id);
 			return id;
+		})
+		.catch(o_O => {
+			console.log(o_O);
+			return stuff.message.reply('Error. Please check logs.');
+		})
+}
+exports.getAllIds = (url, stuff, cb = () => {}) => {
+	axios.get(`${url}accounts.php?rg_sess_id=${stuff.session}&ac_serverid=${stuff.serverid}`)
+		.then(res => {
+		const rows = res.data.split('<tr>');
+		const ids = [];
+		rows.map(item => {
+			item.indexOf('world.php?suid=') !== -1 ? ids.push(item.split('world.php?suid=')[1].split('&serverid')[0]) : null;
+		})
+		//console.log(ids);
+		cb(ids);
+		return ids;
 		})
 		.catch(o_O => {
 			console.log(o_O);
