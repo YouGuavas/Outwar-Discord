@@ -196,20 +196,7 @@ exports.commands = {
 	},
 	'cache-gear': {
 		fxn: (message, args) => {
-			return Gear.myGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (gear) => {
-				Gear.skillGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID}, (skillGear) => {
-					/*	mongo.connect(mongoURI, (err, client) => {
-						if (err) throw err;
-						const db = client.db(process.env.DB_NAME);
-						const collection = db.collection(process.env.COLLECTION);
-						collection.update({suid: args[0]}, {suid: args[0], gear: gear, skillGear: skillGear}, {upsert: true}, (err, data) => {
-							if (err) throw err;
-							client.close();
-							return message.reply(`Successfully cached gear on ${args[0]}`);
-						})
-					})*/
-				})
-			});
+			return Gear.myGear(process.env.BASE, args[0], {message: message, session: rg_sess, serverid: process.env.SERVERID});
 		},
 		message: 'Caches a list of all gear being worn by <characterID>, and all skill gear.',
 		usage: `${prefix}cache-gear <characterID>`
@@ -343,13 +330,9 @@ exports.commands = {
 	},
 	'runa': {
 		fxn: (message, args) => {
-			const MOBS = ['combatant'];
+			const MOBS = ['shade'];
 			const rgas = [{
-				username: 'rganame',
-				password: 'password'
-			},
-			{
-				username: 'rganame',
+				username: 'username',
 				password: 'password'
 			}
 			];
@@ -372,9 +355,6 @@ exports.commands = {
 			const rgas = [{
 				username: 'username',
 				password: 'password'
-			}, {
-				username: 'rganame',
-				password: 'rgapassword'
 			}];
 			rgas.map(item => {
 				return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
