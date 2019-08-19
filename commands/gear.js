@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 
-const myGear = (url, id, stuff, cb = () => {}) => {
+exports.myGear = (url, id, stuff, cb = () => {}) => {
 	axios.get(`${url}equipment.php?suid=${id}&rg_sess_id=${stuff.session.session}&serverid=${stuff.serverid}`)
 		.then(res => {
 			const results = res.data.split('img');
@@ -25,5 +25,3 @@ const myGear = (url, id, stuff, cb = () => {}) => {
 			return stuff.message.reply('Error. Please check logs.');
 		})
 }
-
-export {myGear};

@@ -6,10 +6,10 @@ const World = require('./world');
 const Gear = require('./gear');
 const Pvp = require('./pvp');
 const Misc = require('./misc');
-const Quests = require('./quests');
 const Treasury = require('./treasury');
 const Backpack = require('./backpack');
 const Trial = require('./trial');
+const Swapper = require('./swapper');
 const Woz = require('./woz');
 
 const axios = require('axios');
@@ -17,6 +17,7 @@ const mongo = require('mongodb').MongoClient;
 const dotenv = require('dotenv').config();
 const mongoURI = `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}`;
 const prefix = process.env.PREFIX;
+let serverid;
 let rg_sess = {
 	session: ''
 }
@@ -286,6 +287,19 @@ exports.commands = {
 		message: 'Activates <number> of <item> on <charName>',
 		usage: `${prefix}activate <loginUsername> <loginPassword> <charName> <number> <item>`
 	},
+	'transfer': {
+		fxn: (message, args) => {
+			return Misc.nameToId(process.env.BASE, args[3], {serverid: process.env.SERVERID}, (id) => {
+				return Login.login(args[0], args[1], process.env.BASE, {session: rg_sess, message, serverid: process.env.SERVERID}, (sess) => {
+					return Misc.getAllIds(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (ids) => {
+						return Swapper.swapper(process.env.BASE, args[2], id, {session: sess, message: message, serverid: process.env.SERVERID, items: ['potion1']})
+					})
+				})
+			})
+		},
+		message: 'Transfers all event items from the rga to <charName>',
+		usage: `${prefix}transfer <loginUsername> <loginPassword> <securityWord> <charName>`
+	},
 	'tokens': {
 		fxn: (message, args) => {
 			const successes = [], fails = [];
@@ -348,7 +362,25 @@ exports.commands = {
 		message: 'Runs all chars on all rgas <number> times',
 		usage: `${prefix}runa <number>`
 	},
-
+	'woz': {
+		fxn: (message, args) => {
+			const MOBS = ['servant', 'horror'];
+			const rgas = [{
+				username: 'username',
+				password: 'password'
+			}
+			];
+			rgas.map(item => {
+			return Login.login(item.username, item.password, process.env.BASE, {session: rg_sess, serverid: process.env.SERVERID}, (sess) => {
+					return Misc.getAllIds(process.env.BASE, {session: sess, message: message, serverid: process.env.SERVERID}, (ids) => {
+						return Woz.run(process.env.BASE, ids.slice(2), MOBS, args[0], {session: sess, message: message, serverid: process.env.SERVERID})
+					});
+				});
+			})
+		},
+		message: 'Runs all chars on all rgas <number> times',
+		usage: `${prefix}runa <number>`
+	},
 	
 	'run1s': {
 		fxn: (message, args) => {

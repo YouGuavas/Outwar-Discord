@@ -2,7 +2,7 @@ const axios = require('axios');
 const World = require('./world');
 const Skills = require('./skills');
 
-const run = (url, ids, mobs, numA = 1, stuff, cb = () => {}) => {
+exports.run = (url, ids, mobs, numA = 1, stuff, cb = () => {}) => {
 	console.log(ids);
 	const north = 'north';
 	const south = 'south';
@@ -35,13 +35,13 @@ const run = (url, ids, mobs, numA = 1, stuff, cb = () => {}) => {
 	ids.map(item => {
 		Skills.cast(url, item, skills, 0, stuff);
 		World.teleport(url, item, map.teleport, stuff, () => {
-			move(url, item, map.map, 0, {message: stuff.message, session: stuff.session, serverid: stuff.serverid, mobs: mobs}, exports.move, World.attackByMobNames)
+			exports.move(url, item, map.map, 0, {message: stuff.message, session: stuff.session, serverid: stuff.serverid, mobs: mobs}, exports.move, World.attackByMobNames)
 		})
 	})
 	numA > 0 ? cb(url, ids, mobs, numA - 1, stuff, cb) : stuff.message.reply('Finished running.');
 	return;
 }
-const move = (url, id, path, index, stuff, cb = () => {}, fn = () => {}) => {
+exports.move = (url, id, path, index, stuff, cb = () => {}, fn = () => {}) => {
 	const directions = ['north', 'south', 'east', 'west'];
 	let dir = path[index];
 	let mobs = stuff.mobs;
@@ -66,4 +66,3 @@ const move = (url, id, path, index, stuff, cb = () => {}, fn = () => {}) => {
 		})
 }
 
-export {run, move};
