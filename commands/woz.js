@@ -9,21 +9,26 @@ const run = (url, ids, mobs, numA = 1, stuff, cb = () => {}) => {
 	const east = 'east';
 	const west = 'west';
 	const map = {
-		teleport: 91,
+		teleport: 11,
 		map: [
-		north, north, north, north, north, north, north, north, north, north,
-		east, east,
-		south, south, south,
-		west, east, east, east, 
-		north, north, south, south,
-		south, south, east, east, west, west,
-		south, south, south, east, west, 
-		south, south, south, east, east, west, west,
+		north, north, north, north, east, east, east, east, 
+		west, west, west, west, south, south, south, south,
+		east, east, east, east, east, east, east, north, north,
 		south, south, 
-		west, west, west, west, west, west, west, west,
-		south, south, south, south, north, north, north, north, east,
-		north, north, north, east, east, west, west,
-		west, north, north, north, north, north, north
+		south, south, south, south,
+		east, east, east, east,
+		north, north,
+		east, east, east, east, 
+		west, west, west, west,
+		north, north, north, north, east, east, east, east, east, east,
+		south, south,
+		west, west, west,
+		east, east, east,
+		south, south, south, south,
+		west, west, west, west, west, west,
+		west,west,west, west,west,west, west,west,west, west,west,
+		north, north, north, north
+
 		]
 	}
 	const skills = [3008, 3024, 3007];

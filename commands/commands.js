@@ -10,6 +10,7 @@ const Quests = require('./quests');
 const Treasury = require('./treasury');
 const Backpack = require('./backpack');
 const Trial = require('./trial');
+const Woz = require('./woz');
 
 const axios = require('axios');
 const mongo = require('mongodb').MongoClient;
