@@ -5,7 +5,7 @@
   "main": "bot.js",
   "author": "Guava",
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.2",
     "cors": "^2.8.4",
     "discord.io": "^2.5.3",
