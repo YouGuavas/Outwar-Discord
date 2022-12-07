@@ -11,7 +11,7 @@
     "discord.io": "^2.5.3",
     "discord.js": "^11.3.0",
     "dotenv": "^5.0.1",
-    "express": "^4.16.2",
+    "express": "^4.17.3",
     "ffmpeg-binaries": "^3.2.2-3",
     "mongodb": "^3.1.0-beta4",
     "nodemon": "^1.17.4",
